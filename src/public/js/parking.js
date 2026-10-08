@@ -8,13 +8,14 @@ const reservationsMessage = document.querySelector('#reservations-message');
 
 function showLoading() {
   spotsList.replaceChildren();
-  spotsMessage.textContent = 'Cargando espacios...';
+  spotsMessage.textContent = '';
+  // TODO S17 STUDENT 1:
+  // Mostrar "Cargando espacios..." antes de esperar la respuesta del Backend.
 }
 
 function showError() {
   spotsList.replaceChildren();
   spotSelect.replaceChildren();
-  spotsMessage.textContent = 'No se pudieron cargar los espacios.';
   spotsMessage.className = 'error';
 }
 
@@ -22,10 +23,9 @@ function renderSpots(spots) {
   spotsList.replaceChildren();
   spotSelect.replaceChildren();
 
-  if (spots.length === 0) {
-    spotsMessage.textContent = 'No hay espacios disponibles.';
-    return;
-  }
+  // TODO S17 STUDENT 2:
+  // Si la petición fue exitosa pero no hay espacios,
+  // mostrar "No hay espacios disponibles."
 
   spotsMessage.textContent = '';
 
@@ -68,10 +68,13 @@ async function loadSpots() {
   spotsMessage.className = '';
 
   try {
-    const response = await fetch('/api/spots');
-    if (!response.ok) {
-      throw new Error('Could not load parking spots');
-    }
+    let response;
+    // TODO S17 PROF 2:
+    // Solicitar los espacios al Backend usando fetch().
+
+    // TODO S17 STUDENT 3:
+    // Detectar una respuesta HTTP no exitosa
+    // y mostrar un mensaje de error al usuario.
 
     const spots = await response.json();
     renderSpots(spots);
@@ -95,21 +98,21 @@ async function createReservation(event) {
   const endTime = formData.get('endTime');
 
   try {
-    const response = await fetch('/api/reservations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        parkingSpotId,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString()
-      })
-    });
+    const reservationData = {
+      parkingSpotId,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString()
+    };
+    let response;
 
-    if (response.status === 409) {
-      reservationMessage.textContent = 'Ese espacio ya está reservado en ese horario.';
-      reservationMessage.className = 'error';
-      return;
-    }
+    // TODO S17 PROF 4:
+    // Enviar la reservación al Backend usando POST.
+    // Configurar method, Content-Type y body JSON.
+
+    // TODO S17 STUDENT 4:
+    // Si el Backend responde 409 Conflict,
+    // mostrar un mensaje específico al usuario.
+    // Para otros errores, mantener el mensaje genérico.
 
     if (!response.ok) {
       throw new Error('Could not create reservation');
@@ -117,8 +120,10 @@ async function createReservation(event) {
 
     reservationMessage.textContent = 'Reservación creada correctamente.';
     reservationMessage.className = 'success';
-    await loadSpots();
-    await loadReservations();
+    // TODO S17 CHALLENGE:
+    // Después de una operación exitosa,
+    // actualizar espacios y reservaciones
+    // sin recargar manualmente el navegador.
   } catch (error) {
     console.error(error);
     reservationMessage.textContent = 'No fue posible crear la reservación.';
@@ -179,8 +184,6 @@ async function cancelReservation(id) {
       throw new Error('Could not cancel reservation');
     }
 
-    await loadReservations();
-    await loadSpots();
     reservationsMessage.textContent = 'Reservación cancelada correctamente.';
     reservationsMessage.className = 'success';
   } catch (error) {
